@@ -1,0 +1,360 @@
+# 🏥 HOSPITAL MANAGEMENT SYSTEM — FULL ROLE & FLOW DESIGN
+
+---
+
+# 🧠 SYSTEM OVERVIEW
+
+This system is a **role-based hospital management platform** where:
+
+* Every action follows a **strict workflow**
+* Every user has **controlled permissions**
+* All operations are enforced via **database constraints + backend logic**
+
+---
+
+# 👥 ROLES IN THE SYSTEM
+
+---
+
+## 🧑 PATIENT (Self-Service User)
+
+### 🎯 Purpose
+
+Interact with the hospital system for personal healthcare needs.
+
+---
+
+### ✅ What Patient CAN do
+
+* View available doctors and their time slots
+* Book an appointment with a doctor
+* Reschedule or cancel their own appointment
+* View their consultations
+* View prescribed medicines
+* View billing details
+* View payment history
+* View room/ward (if admitted)
+
+---
+
+### ❌ What Patient CANNOT do
+
+* Modify prescriptions
+* Generate bills
+* Assign rooms
+* Access other patients’ data
+* Modify doctor/staff data
+
+---
+
+### 🧠 Key Rule
+
+> Patient can only modify **their own appointments**, nothing else.
+
+---
+
+---
+
+## 👨‍⚕️ DOCTOR (Medical Authority)
+
+### 🎯 Purpose
+
+Handle all medical aspects of patient care.
+
+---
+
+### ✅ What Doctor CAN do
+
+* Set availability slots
+* View their own appointments
+* View their own consultations
+* Prescribe medicines
+* Update prescriptions
+* Admit patients (assign rooms)
+* View bills of their patients
+* Cancel their own appointments
+
+---
+
+### ❌ What Doctor CANNOT do
+
+* Access other doctors’ patients
+* Modify billing structure
+* Manage users
+
+---
+
+### 🧠 Key Rule
+
+> A doctor can only access and modify data **they own (their consultations)**.
+
+---
+
+---
+
+## 🧑‍💼 STAFF (Operational Role)
+
+### 🎯 Purpose
+
+Handle hospital operations and administration tasks.
+
+---
+
+### ✅ What Staff CAN do
+
+* View all patients
+* Add/update patient data
+* Generate bills
+* Record payments
+* Manage admissions (rooms/wards)
+* Assist in appointment handling
+
+---
+
+### ❌ What Staff CANNOT do
+
+* Modify doctor credentials
+* Override doctor ownership (ideally)
+* Prescribe medicine
+
+---
+
+### 🧠 Key Rule
+
+> Staff handles **operations, not medical decisions**.
+
+---
+
+---
+
+## 👑 ADMIN (Full Control)
+
+### 🎯 Purpose
+
+System-level control and management.
+
+---
+
+### ✅ What Admin CAN do
+
+* Full access to all data
+* Create/delete users (doctor/staff/patient)
+* Override all constraints
+* Modify any record
+
+---
+
+### 🧠 Key Rule
+
+> Admin has **complete unrestricted control**.
+
+---
+
+---
+
+# 🔄 SYSTEM WORKFLOW (CORE LOGIC)
+
+---
+
+## 🟢 STEP 1: DOCTOR SETS AVAILABILITY
+
+```text
+Doctor → adds available time slots
+```
+
+Stored in:
+
+```text
+DoctorAvailability
+```
+
+---
+
+## 🟢 STEP 2: PATIENT BOOKS APPOINTMENT
+
+```text
+Patient → selects doctor + time slot
+```
+
+### Backend checks:
+
+* Slot exists
+* Slot is NOT booked
+* No time conflict
+
+---
+
+### System actions:
+
+```text
+1. Create Consultation
+2. Create Appointment
+3. Mark slot as booked
+```
+
+---
+
+## 🟢 STEP 3: CONSULTATION HAPPENS
+
+```text
+Doctor → views consultation
+```
+
+---
+
+## 🟢 STEP 4: PRESCRIPTION
+
+```text
+Doctor → prescribes medicines
+```
+
+Stored in:
+
+```text
+Prescription
+```
+
+---
+
+## 🟢 STEP 5: (OPTIONAL) ADMISSION
+
+```text
+Doctor/Staff → assigns room
+```
+
+### Constraints:
+
+* One patient = one room
+* One room = one patient
+
+---
+
+## 🟢 STEP 6: BILL GENERATION
+
+```text
+Staff → generates bill
+```
+
+Includes:
+
+* consultation cost
+* room cost
+* medicines
+
+---
+
+## 🟢 STEP 7: PAYMENT
+
+```text
+Patient → pays bill
+```
+
+Stored in:
+
+```text
+Payment
+```
+
+---
+
+# 🔥 APPOINTMENT SLOT ENFORCEMENT (VERY IMPORTANT)
+
+---
+
+## ✅ YES — YOUR SYSTEM HANDLES THIS PROPERLY
+
+Here’s how:
+
+---
+
+### 1. Unique constraint
+
+```sql
+UNIQUE (doctor_id, appointment_datetime)
+```
+
+👉 Prevents:
+
+* double booking same doctor
+
+---
+
+### 2. Availability table
+
+```text
+DoctorAvailability
+```
+
+👉 Defines valid slots
+
+---
+
+### 3. Booking logic
+
+When patient books:
+
+```text
+CHECK:
+- slot exists
+- slot not booked
+```
+
+---
+
+### 4. Slot consumption
+
+```text
+UPDATE DoctorAvailability
+SET is_booked = TRUE
+```
+
+👉 Slot cannot be reused
+
+---
+
+### 5. Optional extra protection
+
+```sql
+UNIQUE (patient_id, appointment_datetime)
+```
+
+👉 prevents patient double booking
+
+---
+
+# 🧠 FINAL SYSTEM GUARANTEES
+
+---
+
+## ✅ Ownership
+
+* Doctor → owns consultations & prescriptions
+* Patient → owns appointments
+* Staff → handles operations
+
+---
+
+## ✅ No conflicts
+
+* No double booking
+* No room conflicts
+* No duplicate slots
+
+---
+
+## ✅ Data integrity
+
+* All relations enforced via foreign keys
+* All flows enforced via backend
+
+---
+
+## ✅ Security
+
+* Role-based access
+* Controlled operations
+* No unauthorized modification
+
+---
+# 🚀 YOU ARE DONE
+---

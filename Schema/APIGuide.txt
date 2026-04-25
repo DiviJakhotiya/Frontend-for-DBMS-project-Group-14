@@ -1,0 +1,159 @@
+🏥 HOSPITAL MANAGEMENT SYSTEM — API GUIDE
+🧠 BASE URL
+http://localhost:5000
+🔐 AUTH SYSTEM (HEADERS)
+
+Every request MUST include:
+
+Header	Description
+role	user role (patient, doctor, staff, admin)
+user_id	ID of logged-in user
+Content-Type	application/json (for POST/PUT)
+👤 1. PATIENT APIs
+🔹 Get Available Doctors & Slots
+GET /availability
+Description:
+
+Returns all free appointment slots.
+
+Response:
+[
+  {
+    "doctor_id": 1,
+    "doctor_name": "Dr. Strange",
+    "available_datetime": "2026-04-05 10:00:00"
+  }
+]
+🔹 Book Appointment
+POST /appointment/book
+Headers:
+role: patient
+user_id: <patient_id>
+Body:
+{
+  "patient_id": 1,
+  "doctor_id": 1,
+  "datetime": "2026-04-05 10:00:00"
+}
+Description:
+
+Books appointment and creates consultation.
+
+🔹 Cancel Appointment
+DELETE /appointment/:id
+Description:
+
+Cancels appointment and frees slot.
+
+🔹 Patient Dashboard
+GET /patient/:id/dashboard
+Headers:
+role: patient
+user_id: <same patient_id>
+Description:
+
+Returns:
+
+appointments
+doctors
+prescriptions
+bills
+🔹 View Prescriptions
+GET /prescription/patient/:id
+Description:
+
+Returns all medicines prescribed to patient.
+
+🔹 Pay Bill
+POST /payment/pay
+Headers:
+role: patient
+user_id: <patient_id>
+Body:
+{
+  "bill_id": 1,
+  "amount": 600,
+  "method": "UPI"
+}
+Description:
+
+Pays bill and updates status.
+
+👨‍⚕️ 2. DOCTOR APIs
+🔹 Add Availability
+POST /doctor/availability
+Headers:
+role: doctor
+user_id: <doctor_id>
+Body:
+{
+  "datetime": "2026-04-06 11:00:00"
+}
+🔹 Prescribe Medicine
+POST /doctor/prescribe
+Body:
+{
+  "consult_id": 1,
+  "medicine_id": 1,
+  "dosage": "2 times a day"
+}
+Description:
+
+Adds prescription for consultation.
+
+🔹 View Consultation Prescription
+GET /prescription/consult/:id
+👨‍💼 3. STAFF APIs
+🔹 Admit Patient
+POST /admission/assign
+Body:
+{
+  "patient_id": 1,
+  "room_no": 101
+}
+🔹 Discharge Patient
+POST /admission/discharge
+Body:
+{
+  "patient_id": 1
+}
+🔹 Generate Bill (AUTO)
+POST /bill/generate
+Body:
+{
+  "consult_id": 1
+}
+Description:
+
+Automatically calculates bill:
+
+consultation
+medicines
+room
+💳 4. PAYMENT APIs
+🔹 Pay Bill
+POST /payment/pay
+Description:
+Validates amount
+Prevents duplicate payment
+Updates bill status
+🧠 SYSTEM FLOW (IMPORTANT FOR DEMO)
+1. Doctor adds availability
+2. Patient books appointment
+3. System creates consultation
+4. Doctor prescribes medicine
+5. Staff admits patient (optional)
+6. Staff generates bill
+7. Patient pays bill
+🚨 COMMON RULES
+🔒 Authorization
+Role	Access
+Patient	Own data only
+Doctor	Own consultations
+Staff	Manage operations
+Admin	Full access
+🔁 Constraints
+One slot = one booking
+One room = one patient
+Bill auto-calculated
+Payment only once
